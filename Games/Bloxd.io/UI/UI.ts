@@ -109,35 +109,40 @@ function createRightButton(
 ): HTMLDivElement {
   const btn = document.createElement("div");
   btn.style.cssText = `
-    position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;
-    transition:transform 0.2s;cursor:pointer;
-    background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
-  `;
+  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;
+  transition:transform 0.2s;cursor:pointer;
+  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
+  transform-origin: top;
+`;
 
-  btn.onmouseenter = () => (btn.style.transform = "scale(1.05)");
-  btn.onmouseleave = () => (btn.style.transform = "scale(1)");
+  btn.onmouseenter = () => (btn.style.transform = "scaleY(1.05)");
+  btn.onmouseleave = () => (btn.style.transform = "scaleY(1)");
+
+  const titleContainer = document.createElement("div");
+  titleContainer.style.cssText = "position:absolute;top:5px;left:5px;display:flex;align-items:center;";
+  btn.appendChild(titleContainer);
 
   const titleText = document.createElement("div");
   titleText.innerText = title;
   titleText.style.cssText =
-    "position:absolute;top:5px;left:5px;font-family:Gabarito,sans-serif;font-size:14px;font-weight:500;color:white;";
-  btn.appendChild(titleText);
+    "font-family:Gabarito,sans-serif;font-size:16px;font-weight:500;color:white;";
+  titleContainer.appendChild(titleText);
 
   const secondTitleText = document.createElement("div");
   secondTitleText.innerText = secondTitle;
   secondTitleText.style.cssText =
-    "position:absolute;top:6px;left:70px;font-family:Gabarito,sans-serif;font-size:16px;font-weight:400;color:rgba(255, 255, 255, 0.56);";
-  btn.appendChild(secondTitleText);
+    "margin-left:5px;font-family:Gabarito,sans-serif;font-size:13px;font-weight:400;color:rgba(255, 255, 255, 0.56);";
+  titleContainer.appendChild(secondTitleText);
 
   const descriptionText = document.createElement("div");
   descriptionText.innerText = additionalInfo;
   descriptionText.style.cssText =
-    "position:absolute;top:40px;left:5px;font-family:Gabarito,sans-serif;font-size:14px;font-weight:400;color:rgba(255, 255, 255, 0.71);";
+    "position:absolute;top:50px;left:5px;font-family:Gabarito,sans-serif;font-size:14px;font-weight:400;color:rgba(255, 255, 255, 0.71);";
   btn.appendChild(descriptionText);
 
   const redCircle = document.createElement("div");
   redCircle.style.cssText =
-    "position:absolute;bottom:5px;right:5px;width:20px;height:20px;background:red;border-radius:50%;";
+    "position:absolute;bottom:5px;right:5px;width:15px;height:15px;background:red;border-radius:50%;";
   btn.appendChild(redCircle);
 
   if (!(title in buttonStateTable)) {
@@ -160,10 +165,8 @@ function createRightButton(
       intervalId = undefined;
     }
   };
-
   return btn;
 }
-
 
 function createButton(button: ButtonData, index: number, buttonContainer: HTMLElement): void {
   const btn: HTMLImageElement = document.createElement('img');
@@ -268,15 +271,15 @@ const buttonData: ButtonData[] = [
   },
 ];
 
-buttonData.forEach((button, index) => { 
-  const btn = document.createElement('img'); 
-  btn.src = button.src; 
-  btn.style.cssText = `position: absolute; width: 104px; height: 23.3px; left: 50%; transform: translateX(-50%); top: ${15 + index * 35}px; z-index: 2147483652; transition: transform 0.2s, scale 0.2s; cursor: pointer;`; 
-  btn.addEventListener('mouseenter', () => btn.style.transform = 'translateX(-50%) scale(1.05)'); 
-  btn.addEventListener('mouseleave', () => btn.style.transform = 'translateX(-50%) scale(1)'); 
-  btn.addEventListener('click', button.onClick); 
-  buttonContainer.appendChild(btn); 
+buttonData.forEach((button, index) => {
+  const btn = document.createElement('img');
+  btn.src = button.src;
+  btn.style.cssText = `position: absolute; width: 104px; height: 23.3px; left: 50%; transform: translateX(-50%); top: ${15 + index * 35}px; z-index: 2147483652; transition: transform 0.2s, scale 0.2s; cursor: pointer;`;
+  btn.addEventListener('mouseenter', () => btn.style.transform = 'translateX(-50%) scale(1.05)');
+  btn.addEventListener('mouseleave', () => btn.style.transform = 'translateX(-50%) scale(1)');
+  btn.addEventListener('click', button.onClick);
+  buttonContainer.appendChild(btn);
 });
 
 ButtonType("");
-window.ondragstart = function() { return false; } // stop dragging
+window.ondragstart = function () { return false; } // stop dragging
