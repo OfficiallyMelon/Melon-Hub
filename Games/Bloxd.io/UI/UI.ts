@@ -1,6 +1,6 @@
 // Imports
 import { Exploits, Module } from '../Modules/Modules';
-import { config } from '../Injection/Inject';
+import { config } from '../Inject/Inject';
 
 // UI
 const link: HTMLLinkElement = document.createElement('link');
@@ -48,7 +48,7 @@ buttonContainer.style.cssText = 'position:absolute;top:60px;left:-25px;width:217
 
 const rightButtonContainer: HTMLDivElement = document.createElement('div');
 rightButtonContainer.id = 'rightButtonContainer';
-rightButtonContainer.style.cssText = 'position: absolute; top: 70px; right: 70px; width: 370px; height: 380px; z-index: 2147483649; overflow-y: auto; overflow-x: hidden; padding-right: 10px; box-sizing: border-box;';
+rightButtonContainer.style.cssText = 'position: absolute; top: 50px; right: 10px; width: 470px; height: 380px; z-index: 2147483649; overflow-y: auto; overflow-x: hidden; padding-right: 10px; box-sizing: border-box;';
 
 // Create UI
 document.head.appendChild(link); // frame
@@ -109,7 +109,7 @@ function createRightButton(
 ): HTMLDivElement {
   const btn = document.createElement("div");
   btn.style.cssText = `
-    position:relative;width:320px;height:75px;margin-bottom:10px;border-radius: 10px; right: -15px;
+    position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;
     transition:transform 0.2s;cursor:pointer;
     background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
   `;

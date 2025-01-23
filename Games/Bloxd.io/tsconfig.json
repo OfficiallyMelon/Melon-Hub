@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "esnext",            // Use ES modules for Webpack compatibility
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",            // Webpack will handle the output
+    "rootDir": "./"
+  },
+  "include": ["./UI/"],
+  "exclude": ["node_modules"]
+}

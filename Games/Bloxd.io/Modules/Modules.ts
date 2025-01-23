@@ -1,5 +1,5 @@
 // Modules.ts
-import { config } from '../Injection/Inject';
+import { config } from '../Inject/Inject';
 
 interface Module {
     type: string;
