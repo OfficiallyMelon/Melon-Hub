@@ -7,13 +7,12 @@ Melon hub is a cheat client designed for several games, meant to be open sourced
 # Features
 ## Bloxd.io
 ### Infinite Jump
-### Fly
-### Walkspeed
-### Scaffold
+### Fast Run
+### Fast Crouch
+### Scaffold (broken)
 ### Account Generator
 ### Anti Camshake
-### Reach
-### Anti Knockback
+### Reach (broken)
 ### Auto Clicker
-### Kill Aura
+### Kill Aura (broken)
 ### and more...
