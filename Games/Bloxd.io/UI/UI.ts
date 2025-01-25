@@ -50,6 +50,10 @@ const rightButtonContainer: HTMLDivElement = document.createElement('div');
 rightButtonContainer.id = 'rightButtonContainer';
 rightButtonContainer.style.cssText = 'position: absolute; top: 50px; right: 10px; width: 470px; height: 380px; z-index: 2147483649; overflow-y: auto; overflow-x: hidden; padding-right: 10px; box-sizing: border-box;';
 
+const miniConsole = document.createElement('div');
+miniConsole.id = 'miniConsole';
+miniConsole.style.cssText = 'position: absolute; top: 40px; right: 5px; width: 470px; height: 380px; background-color: black; color: green; overflow-y: auto; padding: 10px; box-sizing: border-box; font-family: monospace; font-size: 14px; border: 2px solid gray; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); display: none; z-index: 20000000000;';
+
 // Create UI
 document.head.appendChild(link); // frame
 frame.appendChild(rightImageAbove); // gradient
@@ -62,11 +66,45 @@ frame.appendChild(melonHubText); // title
 frame.appendChild(versionText); // version
 frame.appendChild(buttonContainer); // buttons
 frame.appendChild(rightButtonContainer); // right buttons
+frame.appendChild(miniConsole);
 
 document.body.appendChild(frame);
 
-// Hooking
-console.log(config);
+// Debug Console
+const logs: { text: any; type: string; }[] = [];
+
+function addOutput(...args: string[]) {
+  const text = args.join(' ');
+  const output = document.createElement('div');
+  output.textContent = `> ${text}`; // Add ">" at the start of each line
+  output.style.color = 'green'; // Green text for normal messages
+  output.style.marginBottom = '5px';
+  miniConsole.appendChild(output);
+  miniConsole.scrollTop = miniConsole.scrollHeight; // Auto-scroll to the latest output
+  logs.push({ text, type: 'output' }); // Save log
+}
+
+function addError(...args: string[]) {
+  const text = args.join(' ');
+  const output = document.createElement('div');
+  output.textContent = `> ${text}`; // Add ">" at the start of each line
+  output.style.color = 'red'; // Red text for errors
+  output.style.marginBottom = '5px';
+  miniConsole.appendChild(output);
+  miniConsole.scrollTop = miniConsole.scrollHeight; // Auto-scroll to the latest output
+  logs.push({ text, type: 'error' }); // Save log
+}
+
+function reapplyLogs() {
+  miniConsole.innerHTML = ''; // Clear existing logs
+  logs.forEach(log => {
+    if (log.type === 'output') {
+      addOutput(log.text);
+    } else if (log.type === 'error') {
+      addError(log.text);
+    }
+  });
+}
 
 // Dragging
 let isDragging = false;
@@ -156,15 +194,25 @@ function createRightButton(
   btn.onclick = () => {
     buttonStateTable[title] = !buttonStateTable[title];
     redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
-    if (intervalId === undefined) {
-      intervalId = window.setInterval(() => {
+    addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
+
+    if (title === "Account Gen") {
+      if (intervalId === undefined) {
         onClick(buttonStateTable[title]);
-      }, 1);
+        intervalId = window.setTimeout(() => { }, 1);
+      }
     } else {
-      window.clearInterval(intervalId);
-      intervalId = undefined;
+      if (intervalId === undefined) {
+        intervalId = window.setInterval(() => {
+          onClick(buttonStateTable[title]);
+        }, 1);
+      } else {
+        window.clearInterval(intervalId);
+        intervalId = undefined;
+      }
     }
   };
+
   return btn;
 }
 
@@ -202,6 +250,12 @@ function ButtonType(BTN_TYPE = ""): void {
   while (rightButtonContainer.firstChild) {
     rightButtonContainer.removeChild(rightButtonContainer.firstChild);
   }
+  
+  if (BTN_TYPE === "Debug") {
+    miniConsole.style.display = 'block';
+  } else {
+    miniConsole.style.display = 'none';
+  }
 
   Exploits.forEach((exploit) => {
     if (exploit.type === BTN_TYPE || BTN_TYPE === "") {
@@ -213,6 +267,7 @@ function ButtonType(BTN_TYPE = ""): void {
           exploit.pertick
         )
       );
+
     }
   });
 }
@@ -283,3 +338,5 @@ buttonData.forEach((button, index) => {
 
 ButtonType("");
 window.ondragstart = function () { return false; } // stop dragging
+
+export {addOutput, addError, reapplyLogs};

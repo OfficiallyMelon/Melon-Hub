@@ -1,3 +1,5 @@
+import { addOutput } from "../UI/UI";
+
 interface Config {
     coordinates: [number | null, number | null, number | null];
     methods: Record<string, unknown>;
@@ -50,13 +52,11 @@ hookObjectAssign(Object, 'assign', function(...params: any[]) {
 
     if (hasSwingTime && hasIdentifier && params.length === 4 && params[2].swingDuration === 200 && params[1].__id === 1) {
         config.hookedObject = params[0];
-        console.log('Injection Completed');
         setTimeout(function() {
             config.babylonEngine = (window as any).BABYLON;
             config.noaInstance = config.hookedObject.heldItem.noa;
-            console.log('Hooked Noa: ', config.noaInstance);
             config.CurrentlyInjected = true;
-            console.log("Currently Injected: ", config.CurrentlyInjected);
+            addOutput("Injection State:", config.noaInstance ? "Successfully hooked noa!" : "Unsuccessful, try reloading the page.");
             config.genericPlayerState = config.noaInstance.ents._storage.genericLifeForm.hash[config.noaInstance.playerEntity];
         }, 1);
     }

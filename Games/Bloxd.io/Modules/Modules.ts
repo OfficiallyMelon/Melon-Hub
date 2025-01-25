@@ -1,6 +1,6 @@
 // Modules.ts
 import { config } from '../Inject/Inject';
-
+import {addError, addOutput, reapplyLogs} from '../UI/UI';
 interface Module {
     type: string;
     title: string;
@@ -9,7 +9,7 @@ interface Module {
 }
 
 class ExecutionFunctions {
-    constructor() {}
+    constructor() { }
 
     simulateLeftClick(element: HTMLElement): void {
         const mouseDownEvent = new MouseEvent("mousedown", {
@@ -27,13 +27,40 @@ class ExecutionFunctions {
         element.dispatchEvent(mouseUpEvent);
     }
 
+    simulateRightClick(element: HTMLElement): void {
+        const mouseDownEvent = new MouseEvent("mousedown", {
+            button: 2,
+            bubbles: true,
+            cancelable: true
+        });
+        element.dispatchEvent(mouseDownEvent);
+
+        const mouseUpEvent = new MouseEvent("mouseup", {
+            button: 2,
+            bubbles: true,
+            cancelable: true
+        });
+        element.dispatchEvent(mouseUpEvent);
+    }
+
+    distanceBetween(point1:any, point2:any) {
+        const dx = point2[0] - point1[0];
+        const dy = point2[1] - point1[1];
+        const dz = point2[2] - point1[2];
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    distanceBetweenSqrt(point1: any, point2: any) {
+        return Math.sqrt(this.distanceBetween(point1, point2));
+    }
+
     ChangeCrouchSpeed(speed: number): void {
         config.noaInstance.serverSettings.crouchingSpeed = speed;
     }
 
     ChangeWalkSpeed(speed: number): void {
         config.noaInstance.serverSettings.walkingSpeed = speed;
-    }   
+    }
 
     InstantRespawn(): void {
         if (config.noaInstance) {
@@ -42,18 +69,84 @@ class ExecutionFunctions {
         }
     }
     
+    normalizeVector(vector: number[]): number[] {
+        const magnitude = vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2];
+        if (magnitude > 0) {
+            const invMagnitude = 1 / Math.sqrt(magnitude);
+            return [vector[0] * invMagnitude, vector[1] * invMagnitude, vector[2] * invMagnitude];
+        }
+        return vector;
+    }
+
+    killaura(range: number) {
+            const targets = getAttackablePlayers();
+            if (targets.length === 0) {
+                addOutput("No targets found");
+                return;
+            }
+            const nearestTarget = getNearestTarget(targets);
+            const playerPosition = config.noaInstance.ents.getPosition(config.noaInstance.playerEntity);
+            const targetPosition = config.noaInstance.ents.getPositionData(nearestTarget).position;
+
+            if (Utilities.distanceBetweenSqrt(playerPosition, targetPosition) <= 5) {
+                const originalDirection = config.noaInstance.camera._dirVector;
+                config.noaInstance.camera._dirVector = Utilities.normalizeVector([
+                    targetPosition[0] - playerPosition[0],
+                    targetPosition[1] - playerPosition[1],
+                    targetPosition[2] - playerPosition[2]
+                ]);
+                const canvasElement = document.querySelector("#noa-canvas");
+                if (canvasElement) {
+                    this.simulateLeftClick(canvasElement as HTMLElement);
+                }
+                config.noaInstance.camera._dirVector = originalDirection;
+            }
+        }
+    
+
     removeAllCookies() {
         const cookies = document.cookie.split(";");
-    
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i];
+        for (const cookie of cookies) {
             const eqPos = cookie.indexOf("=");
             const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
             document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
         }
     }
-
 }
+
+    function getAllPlayers() {
+        const { playerNames, playerEntity, ents } = config.noaInstance;
+        const playerIds = [];
+        for (const key in playerNames) {
+            if (playerNames.hasOwnProperty(key)) {
+                const id = Number(key);
+                if (id !== playerEntity && ents.hasComponent(id, "position") && ents.hasComponent(id, 'genericLifeformState') && ents.genericLifeformState(id).isAlive) {
+                    playerIds.push(id);
+                }
+            }
+        }
+        return playerIds;
+    }
+
+    
+    function getAttackablePlayers() {
+        return getAllPlayers().filter(id => config.noaInstance.otherPlayerSettings[config.noaInstance.playerEntity][id]?.canAttack);
+    }
+    
+    function getNearestTarget(targets:any) {
+        const playerPosition = config.noaInstance.ents.getPosition(config.noaInstance.playerEntity);
+        let nearestTarget = undefined;
+        let nearestDistance = Infinity;
+        for (const target of targets) {
+            const distance = Utilities.distanceBetween(playerPosition, config.noaInstance.ents.getPosition(target));
+            if (nearestTarget === undefined || distance < nearestDistance) {
+                nearestTarget = target;
+                nearestDistance = distance;
+            }
+        }
+        return nearestTarget;
+    }
+
 
 const Utilities = new ExecutionFunctions();
 
@@ -64,6 +157,7 @@ const Exploits: Module[] = [
         desc: "Detects and attacks nearby entities (BROKEN)",
         pertick: (state) => {
             if (state) {
+                Utilities.killaura(30);
             }
         },
     },
@@ -77,9 +171,9 @@ const Exploits: Module[] = [
                 const element = document.querySelector("#noa-canvas") as HTMLElement | null;
                 if (element) {
                     element.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
-                    element.dispatchEvent(new MouseEvent("mouseup", { button: 0, bubbles: true, cancelable: true }));                    
+                    element.dispatchEvent(new MouseEvent("mouseup", { button: 0, bubbles: true, cancelable: true }));
                 }
-           }
+            }
         },
     },
     {
@@ -100,8 +194,35 @@ const Exploits: Module[] = [
         title: "Scaffold",
         desc: "Automatically places blocks under you. (BROKEN)",
 
-        pertick: () => {
+        pertick: (status) => {
+            if (status) {
+                if (config.CurrentlyInjected && config.noaInstance) {
+                    const player = config.noaInstance.playerEntity;
+                    const position = config.noaInstance.ents.getPosition(player);
+                    const block = config.noaInstance.getBlock(position[0], position[1] - 1, position[2]);
+                    if (block === 0) {
+                        const roundedPosition = [
+                            Math.floor(position[0]),
+                            Math.floor(position[1] - 1),
+                            Math.floor(position[2])
+                        ];
+                        const adjacent = [
+                            Math.floor(position[0]),
+                            Math.floor(position[1]),
+                            Math.floor(position[2])
+                        ];
+                        
+                        config.noaInstance.targetedBlock.position = roundedPosition;
+                        config.noaInstance.targetedBlock.adjacent = adjacent;
+                        config.noaInstance.targetedBlock.blockID = block;
 
+                        addOutput("Placing block at", roundedPosition.toString());
+                        addOutput("Block ID", block);
+                        
+                        Utilities.simulateRightClick(document.querySelector("#noa-canvas") as HTMLElement);
+                    }
+                }
+            }
         },
     },
     {
@@ -111,7 +232,7 @@ const Exploits: Module[] = [
 
         pertick: () => {
             if (config.CurrentlyInjected && config.noaInstance) {
-                    Utilities.InstantRespawn();
+                Utilities.InstantRespawn();
             }
         },
     },
@@ -124,6 +245,70 @@ const Exploits: Module[] = [
             Utilities.removeAllCookies();
             location.reload();
         },
+    },
+    {
+        type: "Combat",
+        title: "Aimbot",
+        desc: "Automatically aims at the nearest player.",
+        pertick: () => {
+            function normalizeVector(vector: number[]): number[] {
+                const magnitude = Math.sqrt(vector[0] ** 2 + vector[1] ** 2 + vector[2] ** 2);
+                if (magnitude === 0) {
+                    return [0, 0, 0];
+                }
+                return vector.map(component => component / magnitude);
+            }
+
+            function setDir(facing: number[]): void {
+                const heading = Math.atan2(facing[0], facing[2]);
+                const pitch = Math.asin(-facing[1]);
+                config.noaInstance.camera.heading = heading;
+                config.noaInstance.camera.pitch = pitch;
+                //cam(heading, pitch);
+            }
+
+            function calculateDistance(pos1: { x: number; y: number; z: number }, pos2: { x: number; y: number; z: number }): number {
+                const dx = pos2.x - pos1.x;
+                const dy = pos2.y - pos1.y;
+                const dz = pos2.z - pos1.z;
+                return Math.sqrt(dx ** 2 + dy ** 2 + dz ** 2);
+            }
+
+            let cPlayer: number[] | null = null;
+            let cDist = Infinity;
+
+            config.noaInstance.entities._storage.position.list.forEach((p: any) => {
+                if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
+                    const myPos = config.noaInstance.entities.getPosition(1);
+                    const enemyPos = p.position;
+                    const myPosObj = {
+                        x: myPos[0],
+                        y: myPos[1],
+                        z: myPos[2]
+                    };
+                    const enemyPosObj = {
+                        x: enemyPos[0],
+                        y: enemyPos[1],
+                        z: enemyPos[2]
+                    };
+                    if (myPos[0] === enemyPos[0] && myPos[1] === enemyPos[1] && myPos[2] === enemyPos[2]) {
+                        return;
+                    }
+                    const distance = calculateDistance(myPosObj, enemyPosObj);
+                    if (distance < cDist) {
+                        cDist = distance;
+                        cPlayer = enemyPos;
+                    }
+                }
+            });
+
+            if (cPlayer && cDist <= 7) {
+                const myPos = config.noaInstance.entities.getPosition(1);
+                const dirVec = [cPlayer[0] - myPos[0], cPlayer[1] - myPos[1], cPlayer[2] - myPos[2]];
+                const normVec = normalizeVector(dirVec);
+                setDir(normVec);
+            }
+        }
     },
     {
         type: "Movement",
@@ -183,6 +368,31 @@ const Exploits: Module[] = [
             } else {
                 if (config.CurrentlyInjected && config.noaInstance) {
                     config.noaInstance.serverSettings.airJumpCount = 0;
+                }
+            }
+        },
+    },
+    {
+        type: "Exploit",
+        title: "Spider (VERY EXPERIMENTAL)",
+        desc: "Climb walls.",
+
+        pertick: (status) => {
+            if (status) {
+                if (config.CurrentlyInjected && config.noaInstance) {
+                    const noa = config.noaInstance;
+                    const player = noa.playerEntity;
+                    const position = noa.ents.getPosition(player); // [x, y, z]
+
+                    const x = position[0];
+                    const y = position[1];
+                    const z = position[2];
+
+                    const blockInFront = noa.getBlock(x, y, z + 1);
+
+                    if (blockInFront !== 0) {
+                        noa.ents.getPhysicsBody(player).applyImpulse([0, noa.serverSettings.jumpAmount * 0.08, 0]);
+                    }
                 }
             }
         },
