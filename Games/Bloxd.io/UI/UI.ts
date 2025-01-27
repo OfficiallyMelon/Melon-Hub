@@ -10,29 +10,13 @@ link.href = 'https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500&disp
 const frame: HTMLDivElement = document.createElement('div');
 frame.style.cssText = 'position:fixed;top:10px;right:10px;width:697.5px;height:448.5px;background-color:transparent;border-radius:10px;overflow:hidden;z-index:2147483646';
 
-const rightImageAbove: HTMLImageElement = document.createElement('img');
-rightImageAbove.src = 'https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/RightAboveGradient.png?raw=true';
-rightImageAbove.style.cssText = 'width:697.5px;height:448.5px;position:absolute;top:0;left:0;z-index:2147483650';
-
 const rightImage: HTMLImageElement = document.createElement('img');
-rightImage.src = 'https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/Right.png?raw=true';
+rightImage.src = 'https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/RightMelon.png?raw=true';
 rightImage.style.cssText = 'width:697.5px;height:448.5px';
 rightImage.style.position = 'relative';
 
-const bottomLeftImage: HTMLImageElement = document.createElement('img');
-bottomLeftImage.src = 'https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/MelonBL.png?raw=true';
-bottomLeftImage.style.cssText = 'position:absolute;bottom:0;left:0;width:198px;height:148.5px;z-index:2147483649';
-
-const topRightImage: HTMLImageElement = document.createElement('img');
-topRightImage.src = 'https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/MelonTR.png?raw=true';
-topRightImage.style.cssText = 'position:absolute;top:0;right:0;width:183px;height:150px;z-index:2147483648';
-
-const bottomRightImage: HTMLImageElement = document.createElement('img');
-bottomRightImage.src = 'https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/MelonBR.png?raw=true';
-bottomRightImage.style.cssText = 'position:absolute;bottom:0;right:0;width:217.5px;height:217.5px;z-index:2147483648';
-
 const leftImage: HTMLImageElement = document.createElement('img');
-leftImage.src = 'https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/Left.png?raw=true';
+leftImage.src = 'https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/LeftMelon.png?raw=true';
 leftImage.style.cssText = 'position:fixed;top:10px;right:495px;width:217.5px;height:448.5px;z-index:2147483646';
 
 const melonHubText: HTMLDivElement = document.createElement('div');
@@ -56,11 +40,7 @@ miniConsole.style.cssText = 'position: absolute; top: 40px; right: 5px; width: 4
 
 // Create UI
 document.head.appendChild(link); // frame
-frame.appendChild(rightImageAbove); // gradient
 frame.appendChild(rightImage); // frame
-frame.appendChild(bottomLeftImage); // melon images
-frame.appendChild(topRightImage); // melon images
-frame.appendChild(bottomRightImage); // melon images
 frame.appendChild(leftImage); // frame
 frame.appendChild(melonHubText); // title
 frame.appendChild(versionText); // version
@@ -216,6 +196,57 @@ function createRightButton(
   return btn;
 }
 
+function createRightThemeButton(
+  title: string,
+  secondTitle: string,
+  additionalInfo: string,
+  onClick: () => void
+): HTMLDivElement {
+  const btn = document.createElement("div");
+  btn.style.cssText = `
+  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;
+  transition:transform 0.2s;cursor:pointer;
+  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
+  transform-origin: top;
+`;
+
+  btn.onmouseenter = () => (btn.style.transform = "scaleY(1.05)");
+  btn.onmouseleave = () => (btn.style.transform = "scaleY(1)");
+
+  const titleContainer = document.createElement("div");
+  titleContainer.style.cssText = "position:absolute;top:5px;left:5px;display:flex;align-items:center;";
+  btn.appendChild(titleContainer);
+
+  const titleText = document.createElement("div");
+  titleText.innerText = title;
+  titleText.style.cssText =
+    "font-family:Gabarito,sans-serif;font-size:16px;font-weight:500;color:white;";
+  titleContainer.appendChild(titleText);
+
+  const secondTitleText = document.createElement("div");
+  secondTitleText.innerText = secondTitle;
+  secondTitleText.style.cssText =
+    "margin-left:5px;font-family:Gabarito,sans-serif;font-size:13px;font-weight:400;color:rgba(255, 255, 255, 0.56);";
+  titleContainer.appendChild(secondTitleText);
+
+  const descriptionText = document.createElement("div");
+  descriptionText.innerText = additionalInfo;
+  descriptionText.style.cssText =
+    "position:absolute;top:50px;left:5px;font-family:Gabarito,sans-serif;font-size:14px;font-weight:400;color:rgba(255, 255, 255, 0.71);";
+  btn.appendChild(descriptionText);
+
+  if (!(title in buttonStateTable)) {
+    buttonStateTable[title] = false;
+  }
+
+  btn.onclick = () => {
+    buttonStateTable[title] = !buttonStateTable[title];
+    onClick();
+  };
+
+  return btn;
+}
+
 function createButton(button: ButtonData, index: number, buttonContainer: HTMLElement): void {
   const btn: HTMLImageElement = document.createElement('img');
   btn.src = button.src;
@@ -256,6 +287,23 @@ function ButtonType(BTN_TYPE = ""): void {
   } else {
     miniConsole.style.display = 'none';
   }
+  
+  if (BTN_TYPE === "Themes") {
+    themes.forEach((theme) => {
+      rightButtonContainer.appendChild(
+        createRightThemeButton(
+          theme.name,
+          `(Theme)`,
+          theme.desc,
+          function () {
+            addOutput("Theme", theme.name, "is now active.");
+            leftImage.src = theme.LeftImage;
+            rightImage.src = theme.RightImage;
+          }
+        )
+      );
+    });
+  }
 
   Exploits.forEach((exploit) => {
     if (exploit.type === BTN_TYPE || BTN_TYPE === "") {
@@ -271,6 +319,28 @@ function ButtonType(BTN_TYPE = ""): void {
     }
   });
 }
+
+interface Themes {
+  name: string;
+  LeftImage: string;
+  RightImage: string;
+  desc: string;
+}
+
+const themes: Themes[] = [
+  {
+    name: "(Default) Melon Hub",
+    LeftImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/LeftMelon.png?raw=true",
+    RightImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/RightMelon.png?raw=true",
+    desc: "The default Melon Hub theme.",
+  },
+  {
+    name: "Netflix",
+    LeftImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/LeftNetflix.png?raw=true",
+    RightImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/RIghtNetflix.png?raw=true",
+    desc: "Netflix theme including Red and Black colors, and Netlix logos.",
+  }
+]
 
 interface ButtonData {
   src: string;

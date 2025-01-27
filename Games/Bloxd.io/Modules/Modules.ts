@@ -207,9 +207,9 @@ const Exploits: Module[] = [
                             Math.floor(position[2])
                         ];
                         const adjacent = [
-                            Math.floor(position[0]),
-                            Math.floor(position[1]),
-                            Math.floor(position[2])
+                            0,
+                            0,
+                            0
                         ];
                         
                         config.noaInstance.targetedBlock.position = roundedPosition;
@@ -401,15 +401,6 @@ const Exploits: Module[] = [
         type: "Settings",
         title: "Soon",
         desc: "Coming soon",
-
-        pertick: () => {
-
-        },
-    },
-    {
-        type: "Themes",
-        title: "Default Theme",
-        desc: "The default theme for Melon Hub",
 
         pertick: () => {
 

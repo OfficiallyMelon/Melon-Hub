@@ -57,6 +57,7 @@ hookObjectAssign(Object, 'assign', function(...params: any[]) {
             config.noaInstance = config.hookedObject.heldItem.noa;
             config.CurrentlyInjected = true;
             addOutput("Injection State:", config.noaInstance ? "Successfully hooked noa!" : "Unsuccessful, try reloading the page.");
+            console.log("Successfully hooked noa!", config.noaInstance);
             config.genericPlayerState = config.noaInstance.ents._storage.genericLifeForm.hash[config.noaInstance.playerEntity];
         }, 1);
     }
