@@ -1,7 +1,7 @@
 // Imports
 import { Exploits, Module } from '../Modules/Modules';
 import { config } from '../Inject/Inject';
-
+import { SaveManager } from '../Saves/Save';
 // UI
 const link: HTMLLinkElement = document.createElement('link');
 link.rel = 'stylesheet';
@@ -56,27 +56,27 @@ const logs: { text: any; type: string; }[] = [];
 function addOutput(...args: string[]) {
   const text = args.join(' ');
   const output = document.createElement('div');
-  output.textContent = `> ${text}`; // Add ">" at the start of each line
-  output.style.color = 'green'; // Green text for normal messages
+  output.textContent = `> ${text}`;
+  output.style.color = 'green';
   output.style.marginBottom = '5px';
   miniConsole.appendChild(output);
-  miniConsole.scrollTop = miniConsole.scrollHeight; // Auto-scroll to the latest output
-  logs.push({ text, type: 'output' }); // Save log
+  miniConsole.scrollTop = miniConsole.scrollHeight; 
+  logs.push({ text, type: 'output' }); 
 }
 
 function addError(...args: string[]) {
   const text = args.join(' ');
   const output = document.createElement('div');
-  output.textContent = `> ${text}`; // Add ">" at the start of each line
-  output.style.color = 'red'; // Red text for errors
+  output.textContent = `> ${text}`;
+  output.style.color = 'red';
   output.style.marginBottom = '5px';
   miniConsole.appendChild(output);
-  miniConsole.scrollTop = miniConsole.scrollHeight; // Auto-scroll to the latest output
-  logs.push({ text, type: 'error' }); // Save log
+  miniConsole.scrollTop = miniConsole.scrollHeight;
+  logs.push({ text, type: 'error' });
 }
 
 function reapplyLogs() {
-  miniConsole.innerHTML = ''; // Clear existing logs
+  miniConsole.innerHTML = '';
   logs.forEach(log => {
     if (log.type === 'output') {
       addOutput(log.text);
@@ -119,6 +119,7 @@ document.addEventListener('mouseup', () => {
 // Functions
 
 const buttonStateTable: Record<string, boolean> = {};
+
 function createRightButton(
   title: string,
   secondTitle: string,
@@ -173,6 +174,10 @@ function createRightButton(
 
   btn.onclick = () => {
     buttonStateTable[title] = !buttonStateTable[title];
+    SaveManager.saveObject('buttonStates', buttonStateTable);
+    if (!SaveManager.importBoolean(title)) {
+        SaveManager.saveBoolean(title, buttonStateTable[title], true);
+    }
     redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
     addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
 
@@ -191,6 +196,70 @@ function createRightButton(
         intervalId = undefined;
       }
     }
+  };
+
+  return btn;
+}
+
+function createRightSliderButton(
+  title: string,
+  secondTitle: string,
+  additionalInfo: string,
+  onClick: (newSliderValue: number) => void,
+  minSliderValue: number,
+  maxSliderValue: number
+): HTMLDivElement {
+  const btn = document.createElement("div");
+  btn.style.cssText = `
+  position:relative;width:450px;height:100px;margin-bottom:10px;border-radius: 10px; right: -5px;
+  transition:transform 0.2s;cursor:pointer;
+  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
+  transform-origin: top;
+`;
+
+  btn.onmouseenter = () => (btn.style.transform = "scaleY(1.05)");
+  btn.onmouseleave = () => (btn.style.transform = "scaleY(1)");
+
+  const titleContainer = document.createElement("div");
+  titleContainer.style.cssText = "position:absolute;top:5px;left:5px;display:flex;align-items:center;";
+  btn.appendChild(titleContainer);
+
+  const titleText = document.createElement("div");
+  titleText.innerText = title;
+  titleText.style.cssText =
+    "font-family:Gabarito,sans-serif;font-size:16px;font-weight:500;color:white;";
+  titleContainer.appendChild(titleText);
+
+  const secondTitleText = document.createElement("div");
+  secondTitleText.innerText = secondTitle;
+  secondTitleText.style.cssText =
+    "margin-left:5px;font-family:Gabarito,sans-serif;font-size:13px;font-weight:400;color:rgba(255, 255, 255, 0.56);";
+  titleContainer.appendChild(secondTitleText);
+
+  const descriptionText = document.createElement("div");
+  descriptionText.innerText = additionalInfo;
+  descriptionText.style.cssText =
+    "position:absolute;top:50px;left:5px;font-family:Gabarito,sans-serif;font-size:14px;font-weight:400;color:rgba(255, 255, 255, 0.71);";
+  btn.appendChild(descriptionText);
+
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.min = minSliderValue.toString();
+  slider.max = maxSliderValue.toString();
+  slider.value = minSliderValue.toString();
+  slider.style.cssText = "position:absolute;bottom:5px;right:5px;width:200px;";
+  btn.appendChild(slider);
+
+  slider.oninput = () => {
+    const newSliderValue = parseInt(slider.value, 10);
+    onClick(newSliderValue);
+  };
+
+  btn.onclick = () => {
+    buttonStateTable[title] = !buttonStateTable[title];
+    SaveManager.saveObject('buttonStates', buttonStateTable);
+    const newSliderValue = parseInt(slider.value, 10);
+    onClick(newSliderValue);
   };
 
   return btn;
@@ -241,6 +310,7 @@ function createRightThemeButton(
 
   btn.onclick = () => {
     buttonStateTable[title] = !buttonStateTable[title];
+    SaveManager.saveObject('buttonStates', buttonStateTable);
     onClick();
   };
 
@@ -299,10 +369,15 @@ function ButtonType(BTN_TYPE = ""): void {
             addOutput("Theme", theme.name, "is now active.");
             leftImage.src = theme.LeftImage;
             rightImage.src = theme.RightImage;
+            SaveManager.saveString('activeTheme', theme.name);
           }
         )
       );
     });
+  }
+
+  if (BTN_TYPE === "Settings") {
+    createRightSliderButton("WalkSpeed", "(Player)", "Change your walk speed.", (newSliderValue) => {console.log(newSliderValue);}, 16, 100);
   }
 
   Exploits.forEach((exploit) => {
@@ -420,5 +495,16 @@ buttonData.forEach((button, index) => {
 
 ButtonType("");
 window.ondragstart = () => false
+
+// Save/Import
+const savedTheme = SaveManager.importString('activeTheme');
+
+if (savedTheme) {
+  const theme = themes.find(t => t.name === savedTheme);
+  if (theme) {
+    leftImage.src = theme.LeftImage;
+    rightImage.src = theme.RightImage;
+  }
+}
 
 export {addOutput, addError, reapplyLogs};
