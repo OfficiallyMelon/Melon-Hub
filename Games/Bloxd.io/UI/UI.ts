@@ -339,6 +339,18 @@ const themes: Themes[] = [
     LeftImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/LeftNetflix.png?raw=true",
     RightImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/RIghtNetflix.png?raw=true",
     desc: "Netflix theme including Red and Black colors, and Netlix logos.",
+  },
+  {
+    name: "McDonalds",
+    LeftImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/LeftMaccas.png?raw=true",
+    RightImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/RightMaccas.png?raw=true",
+    desc: "I ran out of theme ideas lmao"
+  },
+  {
+    name: "Minecraft",
+    LeftImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/LeftMinecraft.png?raw=true",
+    RightImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/RightMinecraft.png?raw=true",
+    desc: "Minecraft theme including grass and dirt blocks."
   }
 ]
 
@@ -407,6 +419,6 @@ buttonData.forEach((button, index) => {
 });
 
 ButtonType("");
-window.ondragstart = function () { return false; } // stop dragging
+window.ondragstart = () => false
 
 export {addOutput, addError, reapplyLogs};
