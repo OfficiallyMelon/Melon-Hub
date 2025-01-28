@@ -1,6 +1,8 @@
 // Modules.ts
 import { config } from '../Inject/Inject';
 import {addError, addOutput, reapplyLogs} from '../UI/UI';
+import { sendPacket, PacketType } from '../Modules/Packets'
+
 interface Module {
     type: string;
     title: string;
@@ -200,26 +202,26 @@ const Exploits: Module[] = [
                     const player = config.noaInstance.playerEntity;
                     const position = config.noaInstance.ents.getPosition(player);
                     const block = config.noaInstance.getBlock(position[0], position[1] - 1, position[2]);
+                    const f = config.noaInstance.ents.getInventoryState(config.noaInstance.playerEntity).selectedItem;
+                    const ObjID = f && ("CubeBlock" === f.typeObj.type || "TwoDBlock" === f.typeObj.type || "SlabBlock" === f.typeObj.type) ? f.typeObj.id : null;
                     if (block === 0) {
                         const roundedPosition = [
                             Math.floor(position[0]),
                             Math.floor(position[1] - 1),
                             Math.floor(position[2])
                         ];
-                        const adjacent = [
-                            0,
-                            0,
-                            0
-                        ];
-                        
-                        config.noaInstance.targetedBlock.position = roundedPosition;
-                        config.noaInstance.targetedBlock.adjacent = adjacent;
-                        config.noaInstance.targetedBlock.blockID = block;
 
                         addOutput("Placing block at", roundedPosition.toString());
                         addOutput("Block ID", block);
                         
-                        Utilities.simulateRightClick(document.querySelector("#noa-canvas") as HTMLElement);
+                        if (ObjID) {
+                            sendPacket(PacketType.PLACE_BLOCK, {
+                                pos: roundedPosition,
+                                toBlock: ObjID,
+                                checker: ''
+                            });
+                            config.noaInstance.setBlock(roundedPosition[0], roundedPosition[1], roundedPosition[2], ObjID)
+                        }
                     }
                 }
             }
@@ -279,30 +281,34 @@ const Exploits: Module[] = [
 
             config.noaInstance.entities._storage.position.list.forEach((p: any) => {
                 if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
-                    const myPos = config.noaInstance.entities.getPosition(1);
-                    const enemyPos = p.position;
-                    const myPosObj = {
-                        x: myPos[0],
-                        y: myPos[1],
-                        z: myPos[2]
-                    };
-                    const enemyPosObj = {
-                        x: enemyPos[0],
-                        y: enemyPos[1],
-                        z: enemyPos[2]
-                    };
-                    if (myPos[0] === enemyPos[0] && myPos[1] === enemyPos[1] && myPos[2] === enemyPos[2]) {
-                        return;
-                    }
-                    const distance = calculateDistance(myPosObj, enemyPosObj);
-                    if (distance < cDist) {
-                        cDist = distance;
-                        cPlayer = enemyPos;
+                    console.log(p.__id)
+                    const lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
+                    if (lifeformState && lifeformState.isAlive) {
+                        const myPos = config.noaInstance.entities.getPosition(1);
+                        const enemyPos = p.position;
+                        const myPosObj = {
+                            x: myPos[0],
+                            y: myPos[1],
+                            z: myPos[2]
+                        };
+                        const enemyPosObj = {
+                            x: enemyPos[0],
+                            y: enemyPos[1],
+                            z: enemyPos[2]
+                        };
+                        if (myPos[0] === enemyPos[0] && myPos[1] === enemyPos[1] && myPos[2] === enemyPos[2]) {
+                            return;
+                        }
+                        const distance = calculateDistance(myPosObj, enemyPosObj);
+                        if (distance < cDist) {
+                            cDist = distance;
+                            cPlayer = enemyPos;
+                        }
                     }
                 }
             });
 
-            if (cPlayer && cDist <= 7) {
+            if (cPlayer && cDist <= 20) {
                 const myPos = config.noaInstance.entities.getPosition(1);
                 const dirVec = [cPlayer[0] - myPos[0], cPlayer[1] - myPos[1], cPlayer[2] - myPos[2]];
                 const normVec = normalizeVector(dirVec);

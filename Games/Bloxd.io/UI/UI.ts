@@ -2,6 +2,7 @@
 import { Exploits, Module } from '../Modules/Modules';
 import { config } from '../Inject/Inject';
 import { SaveManager } from '../Saves/Save';
+import { sendPacket, interceptSockets } from '../Modules/Packets'
 // UI
 const link: HTMLLinkElement = document.createElement('link');
 link.rel = 'stylesheet';
@@ -38,6 +39,11 @@ const miniConsole = document.createElement('div');
 miniConsole.id = 'miniConsole';
 miniConsole.style.cssText = 'position: absolute; top: 40px; right: 5px; width: 470px; height: 380px; background-color: black; color: green; overflow-y: auto; padding: 10px; box-sizing: border-box; font-family: monospace; font-size: 14px; border: 2px solid gray; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); display: none; z-index: 20000000000;';
 
+const injectionStatus = document.createElement("div");
+injectionStatus.id = 'injectionStatus';
+injectionStatus.style.cssText =
+  "position:absolute;bottom:5px;right:5px;width:15px;height:15px;background:red;border-radius:50%;";
+
 // Create UI
 document.head.appendChild(link); // frame
 frame.appendChild(rightImage); // frame
@@ -46,9 +52,14 @@ frame.appendChild(melonHubText); // title
 frame.appendChild(versionText); // version
 frame.appendChild(buttonContainer); // buttons
 frame.appendChild(rightButtonContainer); // right buttons
-frame.appendChild(miniConsole);
+frame.appendChild(miniConsole); // debug console
+frame.appendChild(injectionStatus); // injection status
 
 document.body.appendChild(frame);
+
+// Intercept Sockets
+
+interceptSockets();
 
 // Debug Console
 const logs: { text: any; type: string; }[] = [];
@@ -507,4 +518,4 @@ if (savedTheme) {
   }
 }
 
-export {addOutput, addError, reapplyLogs};
+export {addOutput, addError, reapplyLogs, injectionStatus};

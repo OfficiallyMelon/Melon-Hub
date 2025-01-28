@@ -1,4 +1,10 @@
-import { addOutput } from "../UI/UI";
+import { addOutput, injectionStatus } from "../UI/UI";
+
+declare global {
+    interface Window {
+        noa: any;
+    }
+}
 
 interface Config {
     coordinates: [number | null, number | null, number | null];
@@ -58,7 +64,12 @@ hookObjectAssign(Object, 'assign', function(...params: any[]) {
             config.CurrentlyInjected = true;
             addOutput("Injection State:", config.noaInstance ? "Successfully hooked noa!" : "Unsuccessful, try reloading the page.");
             console.log("Successfully hooked noa!", config.noaInstance);
+            window.noa = config.noaInstance;
             config.genericPlayerState = config.noaInstance.ents._storage.genericLifeForm.hash[config.noaInstance.playerEntity];
+            setTimeout(() => {
+            injectionStatus.style.cssText =
+                "position:absolute;bottom:5px;right:5px;width:15px;height:15px;background:green;border-radius:50%;";
+            }, 100);              
         }, 1);
     }
 });
