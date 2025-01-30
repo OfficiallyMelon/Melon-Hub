@@ -437,6 +437,12 @@ const themes: Themes[] = [
     LeftImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/LeftMinecraft.png?raw=true",
     RightImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/RightMinecraft.png?raw=true",
     desc: "Minecraft theme including grass and dirt blocks."
+  },
+  {
+    name: "Hatsune Miku",
+    LeftImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/LeftMiku.png?raw=true",
+    RightImage: "https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/RightMiku.png?raw=true",
+    desc: "I'm thinking Miku, Miku, oo-ee-oo"
   }
 ]
 

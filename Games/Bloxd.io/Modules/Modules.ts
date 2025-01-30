@@ -149,6 +149,7 @@ class ExecutionFunctions {
         return nearestTarget;
     }
 
+let AimbotStatus = false;
 
 const Utilities = new ExecutionFunctions();
 
@@ -239,6 +240,21 @@ const Exploits: Module[] = [
         },
     },
     {
+        type: "Combat",
+        title: "Auto Trigger",
+        desc: "Auto trigger for Aimbot (BROKEN)",
+
+        pertick: (state) => {
+            if (state && AimbotStatus) {
+                const element = document.querySelector("#noa-canvas") as HTMLElement | null;
+                if (element) {
+                    element.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
+                    element.dispatchEvent(new MouseEvent("mouseup", { button: 0, bubbles: true, cancelable: true }));
+                }
+            }
+        }
+    },
+    {
         type: "Player",
         title: "Account Gen",
         desc: "Generates accounts for you to use. (Requires Refresh)",
@@ -252,7 +268,7 @@ const Exploits: Module[] = [
         type: "Combat",
         title: "Aimbot",
         desc: "Automatically aims at the nearest player.",
-        pertick: () => {
+        pertick: (state) => {
             function normalizeVector(vector: number[]): number[] {
                 const magnitude = Math.sqrt(vector[0] ** 2 + vector[1] ** 2 + vector[2] ** 2);
                 if (magnitude === 0) {
@@ -275,6 +291,7 @@ const Exploits: Module[] = [
                 const dz = pos2.z - pos1.z;
                 return Math.sqrt(dx ** 2 + dy ** 2 + dz ** 2);
             }
+            if (state) {
 
             let cPlayer: number[] | null = null;
             let cDist = Infinity;
@@ -314,6 +331,9 @@ const Exploits: Module[] = [
                 const normVec = normalizeVector(dirVec);
                 setDir(normVec);
             }
+            AimbotStatus = true;
+        }
+            AimbotStatus = false;
         }
     },
     {
