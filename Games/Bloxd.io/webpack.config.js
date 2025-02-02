@@ -4,11 +4,10 @@ const webpack = require('webpack');
 
 const currentDate = new Date().toISOString().split('T')[0];
 
-const userscriptBanner = `
-// ==UserScript==
+const userscriptBanner = `// ==UserScript==
 // @name         Melon Hub (bloxd.io)
 // @namespace    https://github.com/OfficiallyMelon/Melon-Hub
-// @version      ${currentDate}
+// @version      v1.0
 // @description  hack client for bloxd.io, open source on github.
 // @author       melon
 // @match        https://bloxd.io*

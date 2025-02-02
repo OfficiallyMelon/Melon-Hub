@@ -1,8 +1,7 @@
-
 // ==UserScript==
 // @name         Melon Hub (bloxd.io)
 // @namespace    https://github.com/OfficiallyMelon/Melon-Hub
-// @version      2025-02-02
+// @version      v1.0
 // @description  hack client for bloxd.io, open source on github.
 // @author       melon
 // @match        https://bloxd.io*
@@ -836,7 +835,7 @@ document.addEventListener('mouseup', function () {
 var buttonStateTable = {};
 function createRightButton(title, secondTitle, additionalInfo, onClick) {
     var btn = document.createElement("div");
-    btn.style.cssText = "\n  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;\n  transform-origin: top;\n";
+    btn.style.cssText = "\n  position:relative;width:445px;height:72px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;\n  transform-origin: top;\n";
     btn.onmouseenter = function () { return (btn.style.transform = "scaleY(1.05)"); };
     btn.onmouseleave = function () { return (btn.style.transform = "scaleY(1)"); };
     var titleContainer = document.createElement("div");
@@ -925,7 +924,7 @@ function createRightButton(title, secondTitle, additionalInfo, onClick) {
 }
 function createRightSliderButton(title, secondTitle, additionalInfo, onClick, minSliderValue, maxSliderValue) {
     var btn = document.createElement("div");
-    btn.style.cssText = "\n  position:relative;width:450px;height:100px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;\n  transform-origin: top;\n";
+    btn.style.cssText = "\n  position:relative;width:450px;height:100px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;\n  transform-origin: top;\n";
     btn.onmouseenter = function () { return (btn.style.transform = "scaleY(1.05)"); };
     btn.onmouseleave = function () { return (btn.style.transform = "scaleY(1)"); };
     var titleContainer = document.createElement("div");
@@ -967,7 +966,7 @@ function createRightSliderButton(title, secondTitle, additionalInfo, onClick, mi
 }
 function createRightThemeButton(title, secondTitle, additionalInfo, onClick) {
     var btn = document.createElement("div");
-    btn.style.cssText = "\n  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;\n  transform-origin: top;\n";
+    btn.style.cssText = "\n  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;\n  transform-origin: top;\n";
     btn.onmouseenter = function () { return (btn.style.transform = "scaleY(1.05)"); };
     btn.onmouseleave = function () { return (btn.style.transform = "scaleY(1)"); };
     var titleContainer = document.createElement("div");
@@ -1001,7 +1000,7 @@ function createRightThemeButton(title, secondTitle, additionalInfo, onClick) {
 function createKeybindButton(title, secondTitle, additionalInfo) {
     var _a;
     var btn = document.createElement("div");
-    btn.style.cssText = "\n  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;\n  transform-origin: top;\n";
+    btn.style.cssText = "\n  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;\n  transform-origin: top;\n";
     btn.onmouseenter = function () { return (btn.style.transform = "scaleY(1.05)"); };
     btn.onmouseleave = function () { return (btn.style.transform = "scaleY(1)"); };
     var titleContainer = document.createElement("div");

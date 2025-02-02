@@ -143,7 +143,7 @@ function createRightButton(
   btn.style.cssText = `
   position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;
   transition:transform 0.2s;cursor:pointer;
-  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
+  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;
   transform-origin: top;
 `;
 
@@ -255,7 +255,7 @@ function createRightSliderButton(
   btn.style.cssText = `
   position:relative;width:450px;height:100px;margin-bottom:10px;border-radius: 10px; right: -5px;
   transition:transform 0.2s;cursor:pointer;
-  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
+  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;
   transform-origin: top;
 `;
 
@@ -317,7 +317,7 @@ function createRightThemeButton(
   btn.style.cssText = `
   position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;
   transition:transform 0.2s;cursor:pointer;
-  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
+  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;
   transform-origin: top;
 `;
 
@@ -368,7 +368,7 @@ const btn = document.createElement("div");
 btn.style.cssText = `
   position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;
   transition:transform 0.2s;cursor:pointer;
-  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
+  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;
   transform-origin: top;
 `;
 
