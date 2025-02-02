@@ -171,10 +171,10 @@ const Exploits: Module[] = [
     {
         type: "Combat",
         title: "Kill Aura",
-        desc: "Detects and attacks nearby entities (BROKEN)",
+        desc: "Detects and attacks nearby entities",
         pertick: (state) => {
             if (state) {
-                let cDist = 15;
+                let cDist = 3.5;
                 let cPlayer = null
     
                 config.noaInstance.entities._storage.position.list.forEach((p: any) => {

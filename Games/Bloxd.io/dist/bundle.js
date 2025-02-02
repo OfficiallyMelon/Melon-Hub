@@ -319,10 +319,11 @@ var Exploits = [
         desc: "Detects and attacks nearby entities",
         pertick: function (state) {
             if (state) {
-                var cDist_1 = 12;
+                var cDist_1 = 3.5;
                 var cPlayer_1 = null;
                 config.noaInstance.entities._storage.position.list.forEach(function (p) {
                     if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
+                        console.log(p.__id);
                         var lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
                         if (lifeformState && lifeformState.isAlive) {
                             var myPos = config.noaInstance.entities.getPosition(1);
