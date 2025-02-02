@@ -13,9 +13,8 @@ Melon hub is a cheat client designed for several games, meant to be open sourced
 ### Scaffold (broken)
 ### Account Generator
 ### Anti Camshake
-### Reach (broken)
 ### Auto Clicker
-### Kill Aura (broken)
+### Kill Aura
 ### and more...
 
 # Credits/Contributions
