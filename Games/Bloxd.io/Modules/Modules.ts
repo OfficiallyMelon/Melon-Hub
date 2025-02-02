@@ -163,7 +163,7 @@ class ExecutionFunctions {
         return nearestTarget;
     }
 
-let AimbotStatus = false;
+let AutoTrigger = false;
 
 const Utilities = new ExecutionFunctions();
 
@@ -179,7 +179,6 @@ const Exploits: Module[] = [
     
                 config.noaInstance.entities._storage.position.list.forEach((p: any) => {
                     if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
-                        console.log(p.__id)
                         const lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
                         if (lifeformState && lifeformState.isAlive) {
                             const myPos = config.noaInstance.entities.getPosition(1);
@@ -300,13 +299,7 @@ const Exploits: Module[] = [
         desc: "Auto trigger for Aimbot (BROKEN)",
 
         pertick: (state) => {
-            if (state && AimbotStatus) {
-                const element = document.querySelector("#noa-canvas") as HTMLElement | null;
-                if (element) {
-                    element.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
-                    element.dispatchEvent(new MouseEvent("mouseup", { button: 0, bubbles: true, cancelable: true }));
-                }
-            }
+            AutoTrigger = state;
         }
     },
     {
@@ -346,14 +339,14 @@ const Exploits: Module[] = [
                 const dz = pos2.z - pos1.z;
                 return Math.sqrt(dx ** 2 + dy ** 2 + dz ** 2);
             }
-            if (state) {
-
+            if (!state) {
+                return;
+            }
             let cPlayer: number[] | null = null;
             let cDist = Infinity;
 
             config.noaInstance.entities._storage.position.list.forEach((p: any) => {
                 if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
-                    console.log(p.__id)
                     const lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
                     if (lifeformState && lifeformState.isAlive) {
                         const myPos = config.noaInstance.entities.getPosition(1);
@@ -385,10 +378,10 @@ const Exploits: Module[] = [
                 const dirVec = [cPlayer[0] - myPos[0], cPlayer[1] - myPos[1], cPlayer[2] - myPos[2]];
                 const normVec = normalizeVector(dirVec);
                 setDir(normVec);
+                if (AutoTrigger) {
+                    config.noaInstance.ents.getHeldItem(config.noaInstance.playerEntity).upFirePrimary()
+                }
             }
-            AimbotStatus = true;
-        }
-            AimbotStatus = false;
         }
     },
     {
@@ -472,21 +465,12 @@ const Exploits: Module[] = [
                     const blockInFront = noa.getBlock(x, y, z + 1);
 
                     if (blockInFront !== 0) {
-                        noa.ents.getPhysicsBody(player).applyImpulse([0, noa.serverSettings.jumpAmount * 0.08, 0]);
+                        noa.ents.getPhysicsBody(player).applyImpulse([0, noa.serverSettings.jumpAmount * 0.03, 0]);
                     }
                 }
             }
         },
-    },
-    {
-        type: "Settings",
-        title: "Soon",
-        desc: "Coming soon",
-
-        pertick: () => {
-
-        },
-    },
+    }
 ];
 
 export { Exploits, Module };

@@ -1,3 +1,19 @@
+
+// ==UserScript==
+// @name         Melon Hub (bloxd.io)
+// @namespace    https://github.com/OfficiallyMelon/Melon-Hub
+// @version      2025-02-02
+// @description  hack client for bloxd.io, open source on github.
+// @author       melon
+// @match        https://bloxd.io*
+// @icon         https://bloxd.io*
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        unsafeWindow
+// @run-at       document-start
+// ==/UserScript==
+
+
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	// The require scope
@@ -310,7 +326,7 @@ function getNearestTarget(targets) {
     }
     return nearestTarget;
 }
-var AimbotStatus = false;
+var AutoTrigger = false;
 var Utilities = new ExecutionFunctions();
 var Exploits = [
     {
@@ -323,7 +339,6 @@ var Exploits = [
                 var cPlayer_1 = null;
                 config.noaInstance.entities._storage.position.list.forEach(function (p) {
                     if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
-                        console.log(p.__id);
                         var lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
                         if (lifeformState && lifeformState.isAlive) {
                             var myPos = config.noaInstance.entities.getPosition(1);
@@ -436,13 +451,7 @@ var Exploits = [
         title: "Auto Trigger",
         desc: "Auto trigger for Aimbot (BROKEN)",
         pertick: function (state) {
-            if (state && AimbotStatus) {
-                var element = document.querySelector("#noa-canvas");
-                if (element) {
-                    element.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
-                    element.dispatchEvent(new MouseEvent("mouseup", { button: 0, bubbles: true, cancelable: true }));
-                }
-            }
+            AutoTrigger = state;
         }
     },
     {
@@ -479,46 +488,47 @@ var Exploits = [
                 var dz = pos2.z - pos1.z;
                 return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
             }
-            if (state) {
-                var cPlayer_2 = null;
-                var cDist_2 = Infinity;
-                config.noaInstance.entities._storage.position.list.forEach(function (p) {
-                    if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
-                        console.log(p.__id);
-                        var lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
-                        if (lifeformState && lifeformState.isAlive) {
-                            var myPos = config.noaInstance.entities.getPosition(1);
-                            var enemyPos = p.position;
-                            var myPosObj = {
-                                x: myPos[0],
-                                y: myPos[1],
-                                z: myPos[2]
-                            };
-                            var enemyPosObj = {
-                                x: enemyPos[0],
-                                y: enemyPos[1],
-                                z: enemyPos[2]
-                            };
-                            if (myPos[0] === enemyPos[0] && myPos[1] === enemyPos[1] && myPos[2] === enemyPos[2]) {
-                                return;
-                            }
-                            var distance = calculateDistance(myPosObj, enemyPosObj);
-                            if (distance < cDist_2) {
-                                cDist_2 = distance;
-                                cPlayer_2 = enemyPos;
-                            }
+            if (!state) {
+                return;
+            }
+            var cPlayer = null;
+            var cDist = Infinity;
+            config.noaInstance.entities._storage.position.list.forEach(function (p) {
+                if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
+                    var lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
+                    if (lifeformState && lifeformState.isAlive) {
+                        var myPos = config.noaInstance.entities.getPosition(1);
+                        var enemyPos = p.position;
+                        var myPosObj = {
+                            x: myPos[0],
+                            y: myPos[1],
+                            z: myPos[2]
+                        };
+                        var enemyPosObj = {
+                            x: enemyPos[0],
+                            y: enemyPos[1],
+                            z: enemyPos[2]
+                        };
+                        if (myPos[0] === enemyPos[0] && myPos[1] === enemyPos[1] && myPos[2] === enemyPos[2]) {
+                            return;
+                        }
+                        var distance = calculateDistance(myPosObj, enemyPosObj);
+                        if (distance < cDist) {
+                            cDist = distance;
+                            cPlayer = enemyPos;
                         }
                     }
-                });
-                if (cPlayer_2 && cDist_2 <= 20) {
-                    var myPos = config.noaInstance.entities.getPosition(1);
-                    var dirVec = [cPlayer_2[0] - myPos[0], cPlayer_2[1] - myPos[1], cPlayer_2[2] - myPos[2]];
-                    var normVec = normalizeVector(dirVec);
-                    setDir(normVec);
                 }
-                AimbotStatus = true;
+            });
+            if (cPlayer && cDist <= 20) {
+                var myPos = config.noaInstance.entities.getPosition(1);
+                var dirVec = [cPlayer[0] - myPos[0], cPlayer[1] - myPos[1], cPlayer[2] - myPos[2]];
+                var normVec = normalizeVector(dirVec);
+                setDir(normVec);
+                if (AutoTrigger) {
+                    config.noaInstance.ents.getHeldItem(config.noaInstance.playerEntity).upFirePrimary();
+                }
             }
-            AimbotStatus = false;
         }
     },
     {
@@ -597,24 +607,17 @@ var Exploits = [
                     var z = position[2];
                     var blockInFront = noa.getBlock(x, y, z + 1);
                     if (blockInFront !== 0) {
-                        noa.ents.getPhysicsBody(player).applyImpulse([0, noa.serverSettings.jumpAmount * 0.08, 0]);
+                        noa.ents.getPhysicsBody(player).applyImpulse([0, noa.serverSettings.jumpAmount * 0.03, 0]);
                     }
                 }
             }
         },
-    },
-    {
-        type: "Settings",
-        title: "Soon",
-        desc: "Coming soon",
-        pertick: function () {
-        },
-    },
+    }
 ];
 
 
 ;// ./Saves/Save.ts
-var SaveManager = /** @class */ (function () {
+var Save_SaveManager = /** @class */ (function () {
     function SaveManager() {
     }
     SaveManager.saveBoolean = function (key, value, overwrite) {
@@ -645,17 +648,77 @@ var SaveManager = /** @class */ (function () {
 
 
 ;// ./UI/Keybinds.ts
-var Keybinds = [
-    {
-        "Module": "Aimbot",
-        "Keybind": "Control",
-        "KeybindCode": "ControlRight"
+var loadKeybinds = function () {
+    var savedKeybinds = localStorage.getItem('keybinds');
+    if (savedKeybinds) {
+        return JSON.parse(savedKeybinds);
     }
-];
+    else {
+        return [
+            {
+                Module: "Kill Aura",
+                Keybind: "",
+                KeybindCode: "",
+            },
+            {
+                Module: "Aimbot",
+                Keybind: "",
+                KeybindCode: "",
+            },
+            {
+                Module: "Auto Clicker",
+                Keybind: "",
+                KeybindCode: "",
+            },
+            {
+                Module: "Scaffold",
+                Keybind: "",
+                KeybindCode: "",
+            },
+            {
+                Module: "Auto Trigger",
+                Keybind: "",
+                KeybindCode: "",
+            },
+            {
+                Module: "Auto Sprint",
+                Keybind: "",
+                KeybindCode: "",
+            },
+            {
+                Module: "Fast Crouch",
+                Keybind: "",
+                KeybindCode: "",
+            },
+            {
+                Module: "Infinite Jump",
+                Keybind: "",
+                KeybindCode: "",
+            },
+            {
+                Module: "Auto Speed",
+                Keybind: "",
+                KeybindCode: "",
+            },
+        ];
+    }
+};
+var Keybinds = loadKeybinds();
+function ChangeKeybind(Module, Key, KeyCode) {
+    for (var _i = 0, Keybinds_1 = Keybinds; _i < Keybinds_1.length; _i++) {
+        var element = Keybinds_1[_i];
+        if (element.Module === Module) {
+            element.Keybind = Key !== null ? Key : element.Keybind;
+            element.KeybindCode = KeyCode !== null ? KeyCode : element.KeybindCode;
+        }
+    }
+    localStorage.setItem('keybinds', JSON.stringify(Keybinds));
+}
 
 
 ;// ./UI/UI.ts
 // Imports
+
 
 
 
@@ -803,39 +866,41 @@ function createRightButton(title, secondTitle, additionalInfo, onClick) {
     }
     redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
     var intervalId;
+    Keybinds.forEach(function (keybind) {
+        if (keybind.Module === title) {
+            console.log("keybind");
+            document.addEventListener('keydown', function (event) {
+                console.log(event.key, keybind.Keybind);
+                if (event.key !== keybind.Keybind) {
+                    return;
+                }
+                if (keybind.KeybindCode.length > 0 && event.code !== keybind.KeybindCode) {
+                    return;
+                }
+                console.log(keybind.Keybind);
+                buttonStateTable[title] = !buttonStateTable[title];
+                redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
+                if (intervalId === undefined) {
+                    intervalId = window.setInterval(function () {
+                        onClick(buttonStateTable[title]);
+                    }, 1);
+                }
+                else {
+                    window.clearInterval(intervalId);
+                    intervalId = undefined;
+                }
+                addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
+            });
+        }
+    });
     btn.onclick = function () {
         buttonStateTable[title] = !buttonStateTable[title];
-        SaveManager.saveObject('buttonStates', buttonStateTable);
-        if (!SaveManager.importBoolean(title)) {
-            SaveManager.saveBoolean(title, buttonStateTable[title], true);
+        Save_SaveManager.saveObject('buttonStates', buttonStateTable);
+        if (!Save_SaveManager.importBoolean(title)) {
+            Save_SaveManager.saveBoolean(title, buttonStateTable[title], true);
         }
         redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
         addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
-        // loop through Keybinds and if the keybind button is pressed for the module (check buttonStateTable[title]) it will enable/disable the btn here
-        Keybinds.forEach(function (keybind) {
-            if (keybind.Module === title) {
-                document.addEventListener('keydown', function (event) {
-                    if (event.key !== keybind.Keybind) {
-                        return;
-                    }
-                    if (keybind.KeybindCode.length > 0 && event.code !== keybind.KeybindCode) {
-                        return;
-                    }
-                    buttonStateTable[title] = !buttonStateTable[title];
-                    redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
-                    if (intervalId === undefined) {
-                        intervalId = window.setInterval(function () {
-                            onClick(buttonStateTable[title]);
-                        }, 1);
-                    }
-                    else {
-                        window.clearInterval(intervalId);
-                        intervalId = undefined;
-                    }
-                    addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
-                });
-            }
-        });
         if (title === "Account Gen") {
             if (intervalId === undefined) {
                 onClick(buttonStateTable[title]);
@@ -844,9 +909,11 @@ function createRightButton(title, secondTitle, additionalInfo, onClick) {
         }
         else {
             if (intervalId === undefined) {
-                intervalId = window.setInterval(function () {
-                    onClick(buttonStateTable[title]);
-                }, 1);
+                if (config.noaInstance) {
+                    intervalId = window.setInterval(function () {
+                        onClick(buttonStateTable[title]);
+                    }, 1);
+                }
             }
             else {
                 window.clearInterval(intervalId);
@@ -926,8 +993,50 @@ function createRightThemeButton(title, secondTitle, additionalInfo, onClick) {
     }
     btn.onclick = function () {
         buttonStateTable[title] = !buttonStateTable[title];
-        SaveManager.saveObject('buttonStates', buttonStateTable);
+        Save_SaveManager.saveObject('buttonStates', buttonStateTable);
         onClick();
+    };
+    return btn;
+}
+function createKeybindButton(title, secondTitle, additionalInfo) {
+    var _a;
+    var btn = document.createElement("div");
+    btn.style.cssText = "\n  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;\n  transform-origin: top;\n";
+    btn.onmouseenter = function () { return (btn.style.transform = "scaleY(1.05)"); };
+    btn.onmouseleave = function () { return (btn.style.transform = "scaleY(1)"); };
+    var titleContainer = document.createElement("div");
+    titleContainer.style.cssText = "position:absolute;top:5px;left:5px;display:flex;align-items:center;";
+    btn.appendChild(titleContainer);
+    var titleText = document.createElement("div");
+    titleText.innerText = title;
+    titleText.style.cssText =
+        "font-family:Gabarito,sans-serif;font-size:16px;font-weight:500;color:white;";
+    titleContainer.appendChild(titleText);
+    var secondTitleText = document.createElement("div");
+    secondTitleText.innerText = secondTitle;
+    secondTitleText.style.cssText =
+        "margin-left:5px;font-family:Gabarito,sans-serif;font-size:13px;font-weight:400;color:rgba(255, 255, 255, 0.56);";
+    titleContainer.appendChild(secondTitleText);
+    var descriptionText = document.createElement("div");
+    descriptionText.innerText = additionalInfo;
+    descriptionText.style.cssText =
+        "position:absolute;top:50px;left:5px;font-family:Gabarito,sans-serif;font-size:14px;font-weight:400;color:rgba(255, 255, 255, 0.71);";
+    btn.appendChild(descriptionText);
+    var currentKeybind = ((_a = Keybinds.find(function (bind) { return bind.Module === title; })) === null || _a === void 0 ? void 0 : _a.Keybind) || "None";
+    var keybindBox = document.createElement("div");
+    keybindBox.innerText = currentKeybind;
+    keybindBox.style.cssText = "\n  position: absolute;\n  bottom: 5px;\n  right: 5px;\n  width: 50px;\n  height: 20px;\n  background: rgba(0, 0, 0, 0.5);\n  color: white;\n  font-family: Gabarito, sans-serif;\n  font-size: 12px;\n  font-weight: 400;\n  text-align: center;\n  line-height: 20px;\n  border-radius: 5px;\n  cursor: pointer;\n";
+    btn.appendChild(keybindBox);
+    btn.onclick = function () {
+        document.addEventListener("keydown", function (event) {
+            ChangeKeybind(title, event.key.toString(), event.code ? event.code.toString() : "");
+            keybindBox.innerText = event.key.toUpperCase();
+        }, { once: true });
+    };
+    keybindBox.onclick = function (event) {
+        event.stopPropagation();
+        ChangeKeybind(title, "", "");
+        keybindBox.innerText = "None";
     };
     return btn;
 }
@@ -965,12 +1074,14 @@ function ButtonType(BTN_TYPE) {
                 addOutput("Theme", theme.name, "is now active.");
                 leftImage.src = theme.LeftImage;
                 rightImage.src = theme.RightImage;
-                SaveManager.saveString('activeTheme', theme.name);
+                Save_SaveManager.saveString('activeTheme', theme.name);
             }));
         });
     }
     if (BTN_TYPE === "Settings") {
-        createRightSliderButton("WalkSpeed", "(Player)", "Change your walk speed.", function (newSliderValue) { console.log(newSliderValue); }, 16, 100);
+        Exploits.forEach(function (exploit) {
+            rightButtonContainer.appendChild(createKeybindButton(exploit.title, "Keybind", "Change keybind"));
+        });
     }
     Exploits.forEach(function (exploit) {
         if (exploit.type === BTN_TYPE || BTN_TYPE === "") {
@@ -1069,7 +1180,7 @@ buttonData.forEach(function (button, index) {
 ButtonType("");
 window.ondragstart = function () { return false; };
 // Save/Import
-var savedTheme = SaveManager.importString('activeTheme');
+var savedTheme = Save_SaveManager.importString('activeTheme');
 if (savedTheme) {
     var theme = themes.find(function (t) { return t.name === savedTheme; });
     if (theme) {

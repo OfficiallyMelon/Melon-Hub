@@ -1,5 +1,25 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
+
+const currentDate = new Date().toISOString().split('T')[0];
+
+const userscriptBanner = `
+// ==UserScript==
+// @name         Melon Hub (bloxd.io)
+// @namespace    https://github.com/OfficiallyMelon/Melon-Hub
+// @version      ${currentDate}
+// @description  hack client for bloxd.io, open source on github.
+// @author       melon
+// @match        https://bloxd.io*
+// @icon         https://bloxd.io*
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        unsafeWindow
+// @run-at       document-start
+// ==/UserScript==
+
+`;
 
 module.exports = {
   mode: 'production',
@@ -35,4 +55,10 @@ module.exports = {
       }),
     ],
   },
+  plugins: [
+    new webpack.BannerPlugin({
+      banner: userscriptBanner,
+      raw: true,
+    }),
+  ],
 };

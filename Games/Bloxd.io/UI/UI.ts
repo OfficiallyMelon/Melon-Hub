@@ -3,7 +3,7 @@ import { Exploits, Module } from '../Modules/Modules';
 import { config } from '../Inject/Inject';
 import { SaveManager } from '../Saves/Save';
 import { sendPacket, interceptSockets } from '../Modules/Packets'
-import { Keybinds } from './Keybinds'
+import { Keybinds, ChangeKeybind } from './Keybinds'
 
 // UI
 const link: HTMLLinkElement = document.createElement('link');
@@ -185,6 +185,33 @@ function createRightButton(
 
   let intervalId: number | undefined;
 
+  Keybinds.forEach(keybind => {
+    if (keybind.Module === title) {
+    console.log("keybind")
+    document.addEventListener('keydown', (event) => {
+      console.log(event.key, keybind.Keybind)
+      if (event.key !== keybind.Keybind) {
+        return;
+      }
+      if (keybind.KeybindCode.length > 0 && event.code !== keybind.KeybindCode) {
+        return;
+      }
+      console.log(keybind.Keybind)
+      buttonStateTable[title] = !buttonStateTable[title];
+      redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
+      if (intervalId === undefined) {
+        intervalId = window.setInterval(() => {
+          onClick(buttonStateTable[title]);
+        }, 1);
+      } else {
+        window.clearInterval(intervalId);
+        intervalId = undefined;
+      }
+      addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
+    });
+    }
+  });
+
   btn.onclick = () => {
     buttonStateTable[title] = !buttonStateTable[title];
     SaveManager.saveObject('buttonStates', buttonStateTable);
@@ -194,31 +221,6 @@ function createRightButton(
     redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
     addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
 
-    // loop through Keybinds and if the keybind button is pressed for the module (check buttonStateTable[title]) it will enable/disable the btn here
-    Keybinds.forEach(keybind => {
-      if (keybind.Module === title) {
-      document.addEventListener('keydown', (event) => {
-        if (event.key !== keybind.Keybind) {
-          return;
-        }
-        if (keybind.KeybindCode.length > 0 && event.code !== keybind.KeybindCode) {
-          return;
-        }
-        buttonStateTable[title] = !buttonStateTable[title];
-        redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
-        if (intervalId === undefined) {
-          intervalId = window.setInterval(() => {
-            onClick(buttonStateTable[title]);
-          }, 1);
-        } else {
-          window.clearInterval(intervalId);
-          intervalId = undefined;
-        }
-        addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
-      });
-      }
-    });
-
     if (title === "Account Gen") {
       if (intervalId === undefined) {
         onClick(buttonStateTable[title]);
@@ -226,9 +228,11 @@ function createRightButton(
       }
     } else {
       if (intervalId === undefined) {
-        intervalId = window.setInterval(() => {
-          onClick(buttonStateTable[title]);
-        }, 1);
+        if (config.noaInstance) {
+          intervalId = window.setInterval(() => {
+            onClick(buttonStateTable[title]);
+          }, 1);
+        }
       } else {
         window.clearInterval(intervalId);
         intervalId = undefined;
@@ -355,6 +359,82 @@ function createRightThemeButton(
   return btn;
 }
 
+function createKeybindButton(
+title: string,
+secondTitle: string,
+additionalInfo: string,
+): HTMLDivElement {
+const btn = document.createElement("div");
+btn.style.cssText = `
+  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;
+  transition:transform 0.2s;cursor:pointer;
+  background:url('https://raw.githubusercontent.com/OfficiallyMelon/files-cdn/refs/heads/main/bloxd-ui/ButtonHolder.png') no-repeat center/cover;
+  transform-origin: top;
+`;
+
+btn.onmouseenter = () => (btn.style.transform = "scaleY(1.05)");
+btn.onmouseleave = () => (btn.style.transform = "scaleY(1)");
+
+const titleContainer = document.createElement("div");
+titleContainer.style.cssText = "position:absolute;top:5px;left:5px;display:flex;align-items:center;";
+btn.appendChild(titleContainer);
+
+const titleText = document.createElement("div");
+titleText.innerText = title;
+titleText.style.cssText =
+  "font-family:Gabarito,sans-serif;font-size:16px;font-weight:500;color:white;";
+titleContainer.appendChild(titleText);
+
+const secondTitleText = document.createElement("div");
+secondTitleText.innerText = secondTitle;
+secondTitleText.style.cssText =
+  "margin-left:5px;font-family:Gabarito,sans-serif;font-size:13px;font-weight:400;color:rgba(255, 255, 255, 0.56);";
+titleContainer.appendChild(secondTitleText);
+
+const descriptionText = document.createElement("div");
+descriptionText.innerText = additionalInfo;
+descriptionText.style.cssText =
+  "position:absolute;top:50px;left:5px;font-family:Gabarito,sans-serif;font-size:14px;font-weight:400;color:rgba(255, 255, 255, 0.71);";
+btn.appendChild(descriptionText);
+
+const currentKeybind = Keybinds.find((bind) => bind.Module === title)?.Keybind || "None";
+
+const keybindBox = document.createElement("div");
+keybindBox.innerText = currentKeybind; 
+keybindBox.style.cssText = `
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 50px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-family: Gabarito, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+`;
+btn.appendChild(keybindBox);
+
+btn.onclick = () => {
+  document.addEventListener("keydown", (event) => {
+    ChangeKeybind(title, event.key.toString(), event.code ? event.code.toString() : "");
+    keybindBox.innerText = event.key.toUpperCase();
+  }, { once: true });
+};
+
+keybindBox.onclick = (event) => {
+  event.stopPropagation();
+  ChangeKeybind(title, "", "");
+  keybindBox.innerText = "None";
+};
+
+return btn;
+}
+
 function createButton(button: ButtonData, index: number, buttonContainer: HTMLElement): void {
   const btn: HTMLImageElement = document.createElement('img');
   btn.src = button.src;
@@ -415,7 +495,11 @@ function ButtonType(BTN_TYPE = ""): void {
   }
 
   if (BTN_TYPE === "Settings") {
-    createRightSliderButton("WalkSpeed", "(Player)", "Change your walk speed.", (newSliderValue) => {console.log(newSliderValue);}, 16, 100);
+    Exploits.forEach((exploit) => {
+      rightButtonContainer.appendChild(
+        createKeybindButton(exploit.title, "Keybind", "Change keybind")
+      )
+    })
   }
 
   Exploits.forEach((exploit) => {
