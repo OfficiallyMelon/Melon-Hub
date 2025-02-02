@@ -9,6 +9,6 @@
     "outDir": "./dist",            // Webpack will handle the output
     "rootDir": "./"
   },
-  "include": ["./UI/"],
+  "include": ["./UI/", "Modules/Modules.ts"],
   "exclude": ["node_modules"]
 }

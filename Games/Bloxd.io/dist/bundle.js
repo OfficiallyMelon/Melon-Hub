@@ -189,6 +189,12 @@ var ExecutionFunctions = /** @class */ (function () {
         });
         element.dispatchEvent(mouseUpEvent);
     };
+    ExecutionFunctions.prototype.calculateDistance = function (pos1, pos2) {
+        var dx = pos2.x - pos1.x;
+        var dy = pos2.y - pos1.y;
+        var dz = pos2.z - pos1.z;
+        return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
+    };
     ExecutionFunctions.prototype.simulateRightClick = function (element) {
         var mouseDownEvent = new MouseEvent("mousedown", {
             button: 2,
@@ -208,6 +214,13 @@ var ExecutionFunctions = /** @class */ (function () {
         var dy = point2[1] - point1[1];
         var dz = point2[2] - point1[2];
         return dx * dx + dy * dy + dz * dz;
+    };
+    ExecutionFunctions.prototype.setDir = function (facing) {
+        var heading = Math.atan2(facing[0], facing[2]);
+        var pitch = Math.asin(-facing[1]);
+        config.noaInstance.camera.heading = heading;
+        config.noaInstance.camera.pitch = pitch;
+        //cam(heading, pitch);
     };
     ExecutionFunctions.prototype.distanceBetweenSqrt = function (point1, point2) {
         return Math.sqrt(this.distanceBetween(point1, point2));
@@ -303,10 +316,48 @@ var Exploits = [
     {
         type: "Combat",
         title: "Kill Aura",
-        desc: "Detects and attacks nearby entities (BROKEN)",
+        desc: "Detects and attacks nearby entities",
         pertick: function (state) {
             if (state) {
-                Utilities.killaura(30);
+                var cDist_1 = 12;
+                var cPlayer_1 = null;
+                config.noaInstance.entities._storage.position.list.forEach(function (p) {
+                    if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
+                        var lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
+                        if (lifeformState && lifeformState.isAlive) {
+                            var myPos = config.noaInstance.entities.getPosition(1);
+                            var enemyPos = p.position;
+                            var myPosObj = {
+                                x: myPos[0],
+                                y: myPos[1],
+                                z: myPos[2]
+                            };
+                            var enemyPosObj = {
+                                x: enemyPos[0],
+                                y: enemyPos[1],
+                                z: enemyPos[2]
+                            };
+                            if (myPos[0] === enemyPos[0] && myPos[1] === enemyPos[1] && myPos[2] === enemyPos[2]) {
+                                return;
+                            }
+                            var distance = Utilities.calculateDistance(myPosObj, enemyPosObj);
+                            if (distance < cDist_1) {
+                                cPlayer_1 = enemyPos;
+                            }
+                        }
+                    }
+                });
+                if (cPlayer_1) {
+                    var myPos = config.noaInstance.entities.getPosition(1);
+                    var dirVec = [cPlayer_1[0] - myPos[0], cPlayer_1[1] - myPos[1], cPlayer_1[2] - myPos[2]];
+                    var normVec = Utilities.normalizeVector(dirVec);
+                    Utilities.setDir(normVec);
+                    var element = document.querySelector("#noa-canvas");
+                    if (element) {
+                        element.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
+                        element.dispatchEvent(new MouseEvent("mouseup", { button: 0, bubbles: true, cancelable: true }));
+                    }
+                }
             }
         },
     },
@@ -428,8 +479,8 @@ var Exploits = [
                 return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
             }
             if (state) {
-                var cPlayer_1 = null;
-                var cDist_1 = Infinity;
+                var cPlayer_2 = null;
+                var cDist_2 = Infinity;
                 config.noaInstance.entities._storage.position.list.forEach(function (p) {
                     if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
                         console.log(p.__id);
@@ -451,16 +502,16 @@ var Exploits = [
                                 return;
                             }
                             var distance = calculateDistance(myPosObj, enemyPosObj);
-                            if (distance < cDist_1) {
-                                cDist_1 = distance;
-                                cPlayer_1 = enemyPos;
+                            if (distance < cDist_2) {
+                                cDist_2 = distance;
+                                cPlayer_2 = enemyPos;
                             }
                         }
                     }
                 });
-                if (cPlayer_1 && cDist_1 <= 20) {
+                if (cPlayer_2 && cDist_2 <= 20) {
                     var myPos = config.noaInstance.entities.getPosition(1);
-                    var dirVec = [cPlayer_1[0] - myPos[0], cPlayer_1[1] - myPos[1], cPlayer_1[2] - myPos[2]];
+                    var dirVec = [cPlayer_2[0] - myPos[0], cPlayer_2[1] - myPos[1], cPlayer_2[2] - myPos[2]];
                     var normVec = normalizeVector(dirVec);
                     setDir(normVec);
                 }
@@ -592,8 +643,19 @@ var SaveManager = /** @class */ (function () {
 }());
 
 
+;// ./UI/Keybinds.ts
+var Keybinds = [
+    {
+        "Module": "Aimbot",
+        "Keybind": "Control",
+        "KeybindCode": "ControlRight"
+    }
+];
+
+
 ;// ./UI/UI.ts
 // Imports
+
 
 
 
@@ -748,6 +810,31 @@ function createRightButton(title, secondTitle, additionalInfo, onClick) {
         }
         redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
         addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
+        // loop through Keybinds and if the keybind button is pressed for the module (check buttonStateTable[title]) it will enable/disable the btn here
+        Keybinds.forEach(function (keybind) {
+            if (keybind.Module === title) {
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== keybind.Keybind) {
+                        return;
+                    }
+                    if (keybind.KeybindCode.length > 0 && event.code !== keybind.KeybindCode) {
+                        return;
+                    }
+                    buttonStateTable[title] = !buttonStateTable[title];
+                    redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
+                    if (intervalId === undefined) {
+                        intervalId = window.setInterval(function () {
+                            onClick(buttonStateTable[title]);
+                        }, 1);
+                    }
+                    else {
+                        window.clearInterval(intervalId);
+                        intervalId = undefined;
+                    }
+                    addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
+                });
+            }
+        });
         if (title === "Account Gen") {
             if (intervalId === undefined) {
                 onClick(buttonStateTable[title]);

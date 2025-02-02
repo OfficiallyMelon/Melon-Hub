@@ -3,6 +3,8 @@ import { Exploits, Module } from '../Modules/Modules';
 import { config } from '../Inject/Inject';
 import { SaveManager } from '../Saves/Save';
 import { sendPacket, interceptSockets } from '../Modules/Packets'
+import { Keybinds } from './Keybinds'
+
 // UI
 const link: HTMLLinkElement = document.createElement('link');
 link.rel = 'stylesheet';
@@ -191,6 +193,31 @@ function createRightButton(
     }
     redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
     addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
+
+    // loop through Keybinds and if the keybind button is pressed for the module (check buttonStateTable[title]) it will enable/disable the btn here
+    Keybinds.forEach(keybind => {
+      if (keybind.Module === title) {
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== keybind.Keybind) {
+          return;
+        }
+        if (keybind.KeybindCode.length > 0 && event.code !== keybind.KeybindCode) {
+          return;
+        }
+        buttonStateTable[title] = !buttonStateTable[title];
+        redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
+        if (intervalId === undefined) {
+          intervalId = window.setInterval(() => {
+            onClick(buttonStateTable[title]);
+          }, 1);
+        } else {
+          window.clearInterval(intervalId);
+          intervalId = undefined;
+        }
+        addOutput("Toggled", title, "to", buttonStateTable[title] ? "on" : "off");
+      });
+      }
+    });
 
     if (title === "Account Gen") {
       if (intervalId === undefined) {

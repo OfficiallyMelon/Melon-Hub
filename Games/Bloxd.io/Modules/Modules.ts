@@ -1,7 +1,7 @@
 // Modules.ts
 import { config } from '../Inject/Inject';
 import {addError, addOutput, reapplyLogs} from '../UI/UI';
-import { sendPacket, PacketType } from '../Modules/Packets'
+import { sendPacket, PacketType } from './Packets'
 
 interface Module {
     type: string;
@@ -28,6 +28,12 @@ class ExecutionFunctions {
         });
         element.dispatchEvent(mouseUpEvent);
     }
+    calculateDistance(pos1: { x: number; y: number; z: number }, pos2: { x: number; y: number; z: number }): number {
+        const dx = pos2.x - pos1.x;
+        const dy = pos2.y - pos1.y;
+        const dz = pos2.z - pos1.z;
+        return Math.sqrt(dx ** 2 + dy ** 2 + dz ** 2);
+    }
 
     simulateRightClick(element: HTMLElement): void {
         const mouseDownEvent = new MouseEvent("mousedown", {
@@ -50,6 +56,14 @@ class ExecutionFunctions {
         const dy = point2[1] - point1[1];
         const dz = point2[2] - point1[2];
         return dx * dx + dy * dy + dz * dz;
+    }
+
+    setDir(facing: number[]): void {
+        const heading = Math.atan2(facing[0], facing[2]);
+        const pitch = Math.asin(-facing[1]);
+        config.noaInstance.camera.heading = heading;
+        config.noaInstance.camera.pitch = pitch;
+        //cam(heading, pitch);
     }
 
     distanceBetweenSqrt(point1: any, point2: any) {
@@ -160,7 +174,48 @@ const Exploits: Module[] = [
         desc: "Detects and attacks nearby entities (BROKEN)",
         pertick: (state) => {
             if (state) {
-                Utilities.killaura(30);
+                let cDist = 15;
+                let cPlayer = null
+    
+                config.noaInstance.entities._storage.position.list.forEach((p: any) => {
+                    if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
+                        console.log(p.__id)
+                        const lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
+                        if (lifeformState && lifeformState.isAlive) {
+                            const myPos = config.noaInstance.entities.getPosition(1);
+                            const enemyPos = p.position;
+                            const myPosObj = {
+                                x: myPos[0],
+                                y: myPos[1],
+                                z: myPos[2]
+                            };
+                            const enemyPosObj = {
+                                x: enemyPos[0],
+                                y: enemyPos[1],
+                                z: enemyPos[2]
+                            };
+                            if (myPos[0] === enemyPos[0] && myPos[1] === enemyPos[1] && myPos[2] === enemyPos[2]) {
+                                return;
+                            }
+                            const distance = Utilities.calculateDistance(myPosObj, enemyPosObj);
+                            if (distance < cDist) {
+                                cPlayer = enemyPos;
+                            }
+                        }
+                    }
+                });
+    
+                if (cPlayer) {
+                    const myPos = config.noaInstance.entities.getPosition(1);
+                    const dirVec = [cPlayer[0] - myPos[0], cPlayer[1] - myPos[1], cPlayer[2] - myPos[2]];
+                    const normVec = Utilities.normalizeVector(dirVec);
+                    Utilities.setDir(normVec);
+                    const element = document.querySelector("#noa-canvas") as HTMLElement | null;
+                    if (element) {
+                        element.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
+                        element.dispatchEvent(new MouseEvent("mouseup", { button: 0, bubbles: true, cancelable: true }));
+                    }
+                }
             }
         },
     },
