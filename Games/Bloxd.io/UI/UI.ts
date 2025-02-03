@@ -105,10 +105,12 @@ let offsetX = 0;
 let offsetY = 0;
 
 frame.addEventListener('mousedown', (e) => {
+  console.log("mouse down ")
   isDragging = true;
   offsetX = e.clientX - frame.getBoundingClientRect().left;
   offsetY = e.clientY - frame.getBoundingClientRect().top;
   frame.style.cursor = 'grabbing';
+
 });
 
 document.addEventListener('mousemove', (e) => {
@@ -196,11 +198,11 @@ function createRightButton(
       if (keybind.KeybindCode.length > 0 && event.code !== keybind.KeybindCode) {
         return;
       }
-      console.log(keybind.Keybind)
       buttonStateTable[title] = !buttonStateTable[title];
       redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
       if (intervalId === undefined) {
         intervalId = window.setInterval(() => {
+          if (!config.noaInstance) return
           onClick(buttonStateTable[title]);
         }, 1);
       } else {

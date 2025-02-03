@@ -180,7 +180,7 @@ const Exploits: Module[] = [
                 config.noaInstance.entities._storage.position.list.forEach((p: any) => {
                     if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
                         const lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
-                        if (lifeformState && lifeformState.isAlive) {
+                        if (lifeformState?.isAlive) {
                             const myPos = config.noaInstance.entities.getPosition(1);
                             const enemyPos = p.position;
                             const myPosObj = {
@@ -452,22 +452,21 @@ const Exploits: Module[] = [
         desc: "Climb walls.",
 
         pertick: (status) => {
-            if (status) {
-                if (config.CurrentlyInjected && config.noaInstance) {
-                    const noa = config.noaInstance;
-                    const player = noa.playerEntity;
-                    const position = noa.ents.getPosition(player); // [x, y, z]
+            if (!(status && (config.CurrentlyInjected && config.noaInstance))) {
+                return;
+            }
+            const noa = config.noaInstance;
+            const player = noa.playerEntity;
+            const position = noa.ents.getPosition(player); // [x, y, z]
 
-                    const x = position[0];
-                    const y = position[1];
-                    const z = position[2];
+            const x = position[0];
+            const y = position[1];
+            const z = position[2];
 
-                    const blockInFront = noa.getBlock(x, y, z + 1);
+            const blockInFront = noa.getBlock(x, y, z + 1);
 
-                    if (blockInFront !== 0) {
-                        noa.ents.getPhysicsBody(player).applyImpulse([0, noa.serverSettings.jumpAmount * 0.03, 0]);
-                    }
-                }
+            if (blockInFront !== 0) {
+                noa.ents.getPhysicsBody(player).applyImpulse([0, noa.serverSettings.jumpAmount * 0.03, 0]);
             }
         },
     }

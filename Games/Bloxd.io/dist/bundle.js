@@ -66,44 +66,59 @@ function hookObjectAssign(target, prop, handler) {
     });
 }
 // Hook Noa (thanks blackhole for injection method, yay!)
-hookObjectAssign(Object, 'assign', function () {
-    var params = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        params[_i] = arguments[_i];
-    }
-    var hasSwingTime = false;
-    try {
-        if (params[2].swingDuration !== undefined) {
-            hasSwingTime = true;
+// hookObjectAssign(Object, 'assign', function(...params: any[]) {
+//     let hasSwingTime = false;
+//     try {
+//         if (params[2].swingDuration !== undefined) {
+//             hasSwingTime = true;
+//         }
+//     } catch (err) {
+//         // Property swingDuration not found
+//     }
+//     let hasIdentifier = false;
+//     try {
+//         if (params[1].__id !== undefined) {
+//             hasIdentifier = true;
+//         }
+//     } catch (err) {
+//         // Property __id not found
+//     }
+//     if (hasSwingTime && hasIdentifier && params.length === 4 && params[2].swingDuration === 200 && params[1].__id === 1) {
+//         config.hookedObject = params[0];
+//         setTimeout(function() {
+//             config.babylonEngine = (window as any).BABYLON;
+//             config.noaInstance = config.hookedObject.heldItem.noa;
+//             config.CurrentlyInjected = true;
+//             addOutput("Injection State:", config.noaInstance ? "Successfully hooked noa!" : "Unsuccessful, try reloading the page.");
+//             console.log("Successfully hooked noa!", config.noaInstance);
+//             window.noa = config.noaInstance;
+//             config.genericPlayerState = config.noaInstance.ents._storage.genericLifeForm.hash[config.noaInstance.playerEntity];
+//             setTimeout(() => {
+//             injectionStatus.style.cssText =
+//                 "position:absolute;bottom:5px;right:5px;width:15px;height:15px;background:green;border-radius:50%;";
+//             }, 100);              
+//         }, 1);
+//     }
+// });
+var sym = Symbol();
+Reflect.defineProperty(Object.prototype, "bloxd", {
+    set: function (bla) {
+        this[sym] = bla;
+        if (this.tickRate != 30) {
+            return;
         }
-    }
-    catch (err) {
-        // Property swingDuration not found
-    }
-    var hasIdentifier = false;
-    try {
-        if (params[1].__id !== undefined) {
-            hasIdentifier = true;
-        }
-    }
-    catch (err) {
-        // Property __id not found
-    }
-    if (hasSwingTime && hasIdentifier && params.length === 4 && params[2].swingDuration === 200 && params[1].__id === 1) {
-        config.hookedObject = params[0];
+        config.babylonEngine = window.BABYLON;
+        config.noaInstance = this;
+        config.CurrentlyInjected = true;
+        addOutput("Injection State:", config.noaInstance ? "Successfully hooked noa!" : "Unsuccessful, try reloading the page.");
+        console.log("Successfully hooked noa!", config.noaInstance);
         setTimeout(function () {
-            config.babylonEngine = window.BABYLON;
-            config.noaInstance = config.hookedObject.heldItem.noa;
-            config.CurrentlyInjected = true;
-            addOutput("Injection State:", config.noaInstance ? "Successfully hooked noa!" : "Unsuccessful, try reloading the page.");
-            console.log("Successfully hooked noa!", config.noaInstance);
-            window.noa = config.noaInstance;
-            config.genericPlayerState = config.noaInstance.ents._storage.genericLifeForm.hash[config.noaInstance.playerEntity];
-            setTimeout(function () {
-                injectionStatus.style.cssText =
-                    "position:absolute;bottom:5px;right:5px;width:15px;height:15px;background:green;border-radius:50%;";
-            }, 100);
-        }, 1);
+            injectionStatus.style.cssText =
+                "position:absolute;bottom:5px;right:5px;width:15px;height:15px;background:green;border-radius:50%;";
+        }, 100);
+    },
+    get: function () {
+        return this[sym];
     }
 });
 
@@ -339,7 +354,7 @@ var Exploits = [
                 config.noaInstance.entities._storage.position.list.forEach(function (p) {
                     if (typeof p.__id !== "number" && p.__id != 1 && p.__id !== config.noaInstance.serverPlayerEntity) {
                         var lifeformState = config.noaInstance.entities.getGenericLifeformState(p.__id);
-                        if (lifeformState && lifeformState.isAlive) {
+                        if (lifeformState === null || lifeformState === void 0 ? void 0 : lifeformState.isAlive) {
                             var myPos = config.noaInstance.entities.getPosition(1);
                             var enemyPos = p.position;
                             var myPosObj = {
@@ -596,19 +611,18 @@ var Exploits = [
         title: "Spider (VERY EXPERIMENTAL)",
         desc: "Climb walls.",
         pertick: function (status) {
-            if (status) {
-                if (config.CurrentlyInjected && config.noaInstance) {
-                    var noa = config.noaInstance;
-                    var player = noa.playerEntity;
-                    var position = noa.ents.getPosition(player); // [x, y, z]
-                    var x = position[0];
-                    var y = position[1];
-                    var z = position[2];
-                    var blockInFront = noa.getBlock(x, y, z + 1);
-                    if (blockInFront !== 0) {
-                        noa.ents.getPhysicsBody(player).applyImpulse([0, noa.serverSettings.jumpAmount * 0.03, 0]);
-                    }
-                }
+            if (!(status && (config.CurrentlyInjected && config.noaInstance))) {
+                return;
+            }
+            var noa = config.noaInstance;
+            var player = noa.playerEntity;
+            var position = noa.ents.getPosition(player); // [x, y, z]
+            var x = position[0];
+            var y = position[1];
+            var z = position[2];
+            var blockInFront = noa.getBlock(x, y, z + 1);
+            if (blockInFront !== 0) {
+                noa.ents.getPhysicsBody(player).applyImpulse([0, noa.serverSettings.jumpAmount * 0.03, 0]);
             }
         },
     }
@@ -812,6 +826,7 @@ var isDragging = false;
 var offsetX = 0;
 var offsetY = 0;
 UI_frame.addEventListener('mousedown', function (e) {
+    console.log("mouse down ");
     isDragging = true;
     offsetX = e.clientX - UI_frame.getBoundingClientRect().left;
     offsetY = e.clientY - UI_frame.getBoundingClientRect().top;
@@ -835,7 +850,7 @@ document.addEventListener('mouseup', function () {
 var buttonStateTable = {};
 function createRightButton(title, secondTitle, additionalInfo, onClick) {
     var btn = document.createElement("div");
-    btn.style.cssText = "\n  position:relative;width:445px;height:72px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;\n  transform-origin: top;\n";
+    btn.style.cssText = "\n  position:relative;width:450px;height:75px;margin-bottom:10px;border-radius: 10px; right: -5px;\n  transition:transform 0.2s;cursor:pointer;\n  background:url('https://github.com/OfficiallyMelon/Melon-Hub/blob/main/Assets/bloxd.io/BTN_Holder.png?raw=true') no-repeat center/cover;\n  transform-origin: top;\n";
     btn.onmouseenter = function () { return (btn.style.transform = "scaleY(1.05)"); };
     btn.onmouseleave = function () { return (btn.style.transform = "scaleY(1)"); };
     var titleContainer = document.createElement("div");
@@ -876,11 +891,12 @@ function createRightButton(title, secondTitle, additionalInfo, onClick) {
                 if (keybind.KeybindCode.length > 0 && event.code !== keybind.KeybindCode) {
                     return;
                 }
-                console.log(keybind.Keybind);
                 buttonStateTable[title] = !buttonStateTable[title];
                 redCircle.style.backgroundColor = buttonStateTable[title] ? "green" : "red";
                 if (intervalId === undefined) {
                     intervalId = window.setInterval(function () {
+                        if (!config.noaInstance)
+                            return;
                         onClick(buttonStateTable[title]);
                     }, 1);
                 }
