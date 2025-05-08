@@ -1,3 +1,5 @@
+### Bloxd is currently broken.
+
 # Melon-Hub
 Melon hub is a cheat client designed for several games, meant to be open sourced & available to all.
 
